@@ -537,6 +537,56 @@ footer .firma{
   border-radius: 10px;
 }
 
+.lightbox-stock-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 13px 28px;
+  background: linear-gradient(135deg, var(--rosa-medio), var(--dorado));
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  border: none;
+}
+.lightbox-stock-btn:hover{
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.32);
+}
+
+.toast-stock{
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--texto);
+  color: white;
+  padding: 13px 24px;
+  border-radius: 30px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  z-index: 3000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: min(90vw, 420px);
+  text-align: center;
+}
+.toast-stock.visible{
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 .lightbox-cerrar{
   position: absolute;
   top: -46px;
@@ -1530,8 +1580,11 @@ document.querySelectorAll('.tarjeta, .titulo-seccion, .sobre-nosotros')
     <div class="lightbox-puntos" id="lightbox-puntos"></div>
     <div class="lightbox-aromas" id="lightbox-aromas"></div>
     <div class="lightbox-descripcion" id="lightbox-descripcion"></div>
+    <a class="lightbox-stock-btn" id="lightbox-stock-btn" href="https://ig.me/m/candelina.deco" target="_blank" rel="noopener" onclick="prepararConsultaStock()">📷 Consultar por stock</a>
   </div>
 </div>
+
+<div class="toast-stock" id="toast-stock"></div>
 
 <script>
 // ---------- Vista de 1 o 2 productos por fila en celular ----------
@@ -1549,6 +1602,7 @@ function toggleVistaColumnas(){
 // ---------- Carrusel de fotos por producto ----------
 let carruselFotos = [];
 let carruselIndice = 0;
+let productoActual = '';
 
 function abrirCarrusel(elemento){
   const datos = elemento.getAttribute('data-images');
@@ -1559,6 +1613,7 @@ function abrirCarrusel(elemento){
 
   const nombre = elemento.closest('.tarjeta').querySelector('h3').textContent;
   document.getElementById('lightbox-nombre').textContent = nombre;
+  productoActual = nombre;
 
   const descripcionCompleta = elemento.getAttribute('data-descripcion') || '';
   document.getElementById('lightbox-descripcion').textContent = descripcionCompleta;
@@ -1592,6 +1647,28 @@ function abrirCarrusel(elemento){
 function cerrarCarrusel(){
   document.getElementById('lightbox').classList.remove('abierto');
   document.body.style.overflow = '';
+}
+
+// ---------- Consulta de stock por Instagram ----------
+function prepararConsultaStock(){
+  const mensaje = `Hola! Quería consultar si tienen en stock: ${productoActual}`;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(mensaje).then(() => {
+      mostrarToastStock('Copiamos el mensaje. Pegalo en el chat de Instagram que se abrió 📋');
+    }).catch(() => {
+      mostrarToastStock('Escribinos: "' + mensaje + '"');
+    });
+  } else {
+    mostrarToastStock('Escribinos: "' + mensaje + '"');
+  }
+}
+
+function mostrarToastStock(texto){
+  const toast = document.getElementById('toast-stock');
+  toast.textContent = texto;
+  toast.classList.add('visible');
+  clearTimeout(toast._temporizador);
+  toast._temporizador = setTimeout(() => toast.classList.remove('visible'), 4500);
 }
 
 function moverCarrusel(direccion){
